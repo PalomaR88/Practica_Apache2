@@ -118,15 +118,64 @@ Hay que modificar el fichero **/etc/apache2/sites-available/iesgn.conf** de la s
 ~~~
 
 
-**Tarea 4 (1 punto)(Obligatorio): Si accedes a la página www.iesgn.org/principal/documentos se visualizarán los documentos que hay en /srv/doc. Por lo tanto se permitirá el listado de fichero y el seguimiento de enlaces simbólicos siempre que sean a ficheros o directorios cuyo dueño sea el usuario. Muestra al profesor el funcionamiento.**
+**Tarea 4: Si accedes a la página www.iesgn.org/principal/documentos se visualizarán los documentos que hay en /srv/doc. Por lo tanto se permitirá el listado de fichero y el seguimiento de enlaces simbólicos siempre que sean a ficheros o directorios cuyo dueño sea el usuario. Muestra al profesor el funcionamiento.**
+
+~~~
+vagrant@servidor:/srv/www/iesgn$ sudo mkdir /srv/doc
+~~~
+en /etc/apache2/sites-available/iesgn.conf se añade:
+~~~
+        Alias "/principal/documentos" "/srv/doc"
+~~~
 
 
-    Tarea 5 (1 punto): En todo el host virtual se debe redefinir los mensajes de error de objeto no encontrado y no permitido. Para el ello se crearan dos ficheros html dentro del directorio error. Entrega las modificaciones necesarias en la configuración y una comprobación del buen funcionamiento.
+
+**Tarea 5: En todo el host virtual se debe redefinir los mensajes de error de objeto no encontrado y no permitido. Para el ello se crearan dos ficheros html dentro del directorio error. Entrega las modificaciones necesarias en la configuración y una comprobación del buen funcionamiento.**
 
 Autentificación, Autorización, y Control de AccesoPermalink
+~~~
+vagrant@servidor:/srv/www/iesgn$ sudo mkdir error
+vagrant@servidor:/srv/www/iesgn$ sudo nano error/error.html
+~~~
 
-    Tarea 6 (1 punto)(Obligatorio): Añade al escenario Vagrant otra máquina conectada por una red interna al servidor. A la URL departamentos.iesgn.org/intranet sólo se debe tener acceso desde el cliente de la red local, y no se pueda acceder desde la anfitriona por la red pública. A la URL departamentos.iesgn.org/internet, sin embargo, sólo se debe tener acceso desde la anfitriona por la red pública, y no desde la red local.
-    Tarea 7 (1 punto): Autentificación básica. Limita el acceso a la URL departamentos.iesgn.org/secreto. Comprueba las cabeceras de los mensajes HTTP que se intercambian entre el servidor y el cliente. ¿Cómo se manda la contraseña entre el cliente y el servidor?. Entrega una breve explicación del ejercicio.
+
+**Tarea 6: Añade al escenario Vagrant otra máquina conectada por una red interna al servidor. A la URL departamentos.iesgn.org/intranet sólo se debe tener acceso desde el cliente de la red local, y no se pueda acceder desde la anfitriona por la red pública. A la URL departamentos.iesgn.org/internet, sin embargo, sólo se debe tener acceso desde la anfitriona por la red pública, y no desde la red local.**
+
+Se modifica /etc/apache2/sites-available/departamentos.conf:
+~~~
+        <Directory "/srv/www/departamentos/internet/">
+                <RequireAll>
+                        Require all granted
+                        Require not ip 192.168.100
+                </RequireAll>
+        </Directory>
+~~~
+
+En la máquina cliente obtengo los siguientes resultados entrando en departamentos.iesgn.org/intranet:
+~~~
+   Intranet
+
+
+Commands: Use arrow keys to move, '?' for help, 'q' to quit, '<-' to go b
+  Arrow keys: Up and Down to move.  Right to follow a link; Left to go bac
+ H)elp O)ptions P)rint G)o M)ain screen Q)uit /=search [delete]=history l
+~~~
+
+Y entrando en departamentos.iesgn.org/internet:
+~~~
+                                Forbidden
+
+   You don't have permission to access this resource.
+     ____________________________________________________________
+
+
+    Apache/2.4.38 (Debian) Server at departamentos.iesgn.org Port
+    80
+~~~
+    
+**Tarea 7: Autentificación básica. Limita el acceso a la URL departamentos.iesgn.org/secreto. Comprueba las cabeceras de los mensajes HTTP que se intercambian entre el servidor y el cliente. ¿Cómo se manda la contraseña entre el cliente y el servidor?. Entrega una breve explicación del ejercicio.**
+
+
     Tarea 8 (1 punto)(Obligatorio): Cómo hemos visto la autentificación básica no es segura, modifica la autentificación para que sea del tipo digest, y sólo sea accesible a los usuarios pertenecientes al grupo directivos. Comprueba las cabeceras de los mensajes HTTP que se intercambian entre el servidor y el cliente. ¿Cómo funciona esta autentificación?
     Tarea 9 (1 punto): Vamos a combinar el control de acceso (tarea 6) y la autentificación (tareas 7 y 8), y vamos a configurar el virtual host para que se comporte de la siguiente manera: el acceso a la URL departamentos.iesgn.org/secreto se hace forma directa desde la intranet, desde la red pública te pide la autentificación. Muestra el resultado al profesor.
 

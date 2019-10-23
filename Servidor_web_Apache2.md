@@ -123,10 +123,53 @@ Hay que modificar el fichero **/etc/apache2/sites-available/iesgn.conf** de la s
 ~~~
 vagrant@servidor:/srv/www/iesgn$ sudo mkdir /srv/doc
 ~~~
-en /etc/apache2/sites-available/iesgn.conf se añade:
+En /etc/apache2/sites-available/iesgn.conf se añade:
 ~~~
         Alias "/principal/documentos" "/srv/doc"
 ~~~
+
+Se configura /etc/apache2/apache2.conf:
+~~~
+<Directory /srv/www/>
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
+</Directory>
+<Directory /srv/doc/>
+        Options Indexes SymLinksIfOwnerMatch
+        AllowOverride All
+        Require all granted
+</Directory>
+
+~~~
+Se crea los enlaces simbólicos:
+- fich2.txt que será con el mismo usuario:
+~~~
+vagrant@servidor:/srv/doc$ nano /home/vagrant/fich2.txt
+vagrant@servidor:/srv/doc$ sudo ln -s /home/vagrant/fich2.txt .
+vagrant@servidor:/srv/doc$ sudo chown -R www-data:www-data fich2.txt 
+~~~
+
+- fich3.txt diferentes usuarios:
+~~~
+vagrant@servidor:/srv/doc$ nano /home/vagrant/fich3.txt
+vagrant@servidor:/srv/doc$ sudo ln -s /home/vagrant/fich3.txt 
+vagrant@servidor:/srv/doc$ sudo chown www-data:www-data fich3.txt 
+~~~
+
+Comprobamos que los usuarios se han modificado correctamente:
+~~~
+vagrant@servidor:/srv/doc$ ls -l
+total 0
+-rw-r--r-- 1 root     root      0 Oct 22 17:49 fic1.txt
+lrwxrwxrwx 1 www-data www-data 23 Oct 23 07:30 fich2.txt -> /home/vagrant/fich2.txt
+lrwxrwxrwx 1 root     root     23 Oct 23 07:35 fich3.txt -> /home/vagrant/fich3.txt
+vagrant@servidor:/srv/doc$ ls -l /home/vagrant/
+total 8
+-rw-r--r-- 1 www-data www-data  9 Oct 23 07:30 fich2.txt
+-rw-r--r-- 1 www-data www-data 12 Oct 23 07:35 fich3.txt
+~~~
+
 
 
 
@@ -135,15 +178,29 @@ en /etc/apache2/sites-available/iesgn.conf se añade:
 Autentificación, Autorización, y Control de AccesoPermalink
 ~~~
 vagrant@servidor:/srv/www/iesgn$ sudo mkdir error
-vagrant@servidor:/srv/www/iesgn$ sudo nano error/error.html
+vagrant@servidor:/srv/www/iesgn/error$ sudo nano error404.html
+vagrant@servidor:/srv/www/iesgn/error$ sudo nano error403.html
 ~~~
 
+Configuración iesgn.org:
+~~~
+        ErrorDocument 404 /error/error404.html
+        ErrorDocument 403 /error/error403.html
+        <Directory /srv/www/iesgn/nopasar>
+                Options All
+                AllowOverride All
+                Require all denied
+        </Directory>
+~~~
 
 **Tarea 6: Añade al escenario Vagrant otra máquina conectada por una red interna al servidor. A la URL departamentos.iesgn.org/intranet sólo se debe tener acceso desde el cliente de la red local, y no se pueda acceder desde la anfitriona por la red pública. A la URL departamentos.iesgn.org/internet, sin embargo, sólo se debe tener acceso desde la anfitriona por la red pública, y no desde la red local.**
 
 Se modifica /etc/apache2/sites-available/departamentos.conf:
 ~~~
-        <Directory "/srv/www/departamentos/internet/">
+	<Directory "/srv/www/departamentos/intranet/">
+		Require ip 192.168.100
+	</Directory>      
+	<Directory "/srv/www/departamentos/internet/">
                 <RequireAll>
                         Require all granted
                         Require not ip 192.168.100
@@ -173,10 +230,191 @@ Y entrando en departamentos.iesgn.org/internet:
     80
 ~~~
     
+
+
 **Tarea 7: Autentificación básica. Limita el acceso a la URL departamentos.iesgn.org/secreto. Comprueba las cabeceras de los mensajes HTTP que se intercambian entre el servidor y el cliente. ¿Cómo se manda la contraseña entre el cliente y el servidor?. Entrega una breve explicación del ejercicio.**
 
+Se crea un directorio llamado secreto con un fichero html:
+~~~
+vagrant@servidor:~$ sudo mkdir /srv/www/departamentos/secreto
+vagrant@servidor:~$ sudo touch /srv/www/departamentos/secreto/index.html
+~~~
 
-    Tarea 8 (1 punto)(Obligatorio): Cómo hemos visto la autentificación básica no es segura, modifica la autentificación para que sea del tipo digest, y sólo sea accesible a los usuarios pertenecientes al grupo directivos. Comprueba las cabeceras de los mensajes HTTP que se intercambian entre el servidor y el cliente. ¿Cómo funciona esta autentificación?
+Se crea un direcotrio claves en /etc/apache2/:
+~~~
+vagrant@servidor:~$ sudo mkdir /etc/apache2/claves
+~~~
+
+Y un usuario con su respectiva contraseña:
+~~~
+vagrant@servidor:~$ sudo htpasswd -c /etc/apache2/claves/passwd.txt paloma
+New password: 
+Re-type new password: 
+Adding password for user paloma
+~~~
+
+Se edita departamentos.conf:
+~~~
+        <Directory "/srv/www/departamentos/secreto/">
+                AuthUserFile "/etc/apache2/claves/passwd.txt"
+                AuthName "Contraseña"
+                AuthType Basic
+                Require valid-user
+        </Directory>
+~~~
+
+Y se hace el tcpdump:
+~~~
+vagrant@servidor:~$ sudo tcpdump -vi eth1
+tcpdump: listening on eth1, link-type EN10MB (Ethernet), capture size 262144 bytes
+07:13:59.610124 IP (tos 0x0, ttl 64, id 60203, offset 0, flags [DF], proto TCP (6), length 60)
+    172.22.8.100.54108 > 172.22.8.56.http: Flags [S], cksum 0xe287 (correct), seq 924958074, win 29200, options [mss 1460,sackOK,TS val 3457676350 ecr 0,nop,wscale 7], length 0
+07:13:59.610207 IP (tos 0x0, ttl 64, id 0, offset 0, flags [DF], proto TCP (6), length 60)
+    172.22.8.56.http > 172.22.8.100.54108: Flags [S.], cksum 0x68f7 (incorrect -> 0x49ca), seq 1654091429, ack 924958075, win 28960, options [mss 1460,sackOK,TS val 1185972656 ecr 3457676350,nop,wscale 6], length 0
+07:13:59.634311 IP (tos 0x0, ttl 64, id 60205, offset 0, flags [DF], proto TCP (6), length 411)
+    172.22.8.100.54108 > 172.22.8.56.http: Flags [P.], cksum 0x43de (correct), seq 1:360, ack 1, win 229, options [nop,nop,TS val 3457676558 ecr 1185972656], length 359: HTTP, length: 359
+	GET /secreto HTTP/1.1
+	Host: departamentos.iesgn.org
+	User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0
+	Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+	Accept-Language: es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3
+	Accept-Encoding: gzip, deflate
+	DNT: 1
+	Connection: keep-alive
+	Upgrade-Insecure-Requests: 1
+	
+07:13:59.634448 IP (tos 0x0, ttl 64, id 24263, offset 0, flags [DF], proto TCP (6), length 52)
+    172.22.8.56.http > 172.22.8.100.54108: Flags [.], cksum 0x68ef (incorrect -> 0xe590), ack 360, win 470, options [nop,nop,TS val 1185972680 ecr 3457676558], length 0
+07:13:59.636986 IP (tos 0x0, ttl 64, id 24264, offset 0, flags [DF], proto TCP (6), length 787)
+    172.22.8.56.http > 172.22.8.100.54108: Flags [P.], cksum 0x6bce (incorrect -> 0xda1e), seq 1:736, ack 360, win 470, options [nop,nop,TS val 1185972681 ecr 3457676558], length 735: HTTP, length: 735
+	HTTP/1.1 401 Unauthorized
+	Date: Wed, 23 Oct 2019 07:13:59 GMT
+	Server: Apache/2.4.38 (Debian)
+07:13:59.651580 IP (tos 0x0, ttl 64, id 60206, offset 0, flags [DF], proto TCP (6), length 52)
+    172.22.8.100.54108 > 172.22.8.56.http: Flags [.], cksum 0xe379 (correct), ack 736, win 240, options [nop,nop,TS val 3457676587 ecr 1185972681], length 0
+07:14:04.642232 IP (tos 0x0, ttl 64, id 24265, offset 0, flags [DF], proto TCP (6), length 52)
+    172.22.8.56.http > 172.22.8.100.54108: Flags [F.], cksum 0x68ef (incorrect -> 0xcf03), seq 736, ack 360, win 470, options [nop,nop,TS val 1185977688 ecr 3457676587], length 0
+07:14:04.648214 IP (tos 0x0, ttl 64, id 60207, offset 0, flags [DF], proto TCP (6), length 52)
+    172.22.8.100.54108 > 172.22.8.56.http: Flags [F.], cksum 0xcfef (correct), seq 360, ack 736, win 240, options [nop,nop,TS val 3457681588 ecr 1185972681], length 0
+07:14:04.648263 IP (tos 0x0, ttl 64, id 24266, offset 0, flags [DF], proto TCP (6), length 52)
+    172.22.8.56.http > 172.22.8.100.54108: Flags [.], cksum 0x68ef (incorrect -> 0xbb73), ack 361, win 470, options [nop,nop,TS val 1185977694 ecr 3457681588], length 0
+07:14:04.650122 IP (tos 0x0, ttl 64, id 60208, offset 0, flags [DF], proto TCP (6), length 52)
+    172.22.8.100.54108 > 172.22.8.56.http: Flags [.], cksum 0xbc5c (correct), ack 737, win 240, options [nop,nop,TS val 3457681591 ecr 1185977688], length 0
+07:14:04.927040 IP (tos 0x0, ttl 64, id 18677, offset 0, flags [DF], proto TCP (6), length 60)
+    172.22.8.100.54110 > 172.22.8.56.http: Flags [S], cksum 0xde7d (correct), seq 3490648937, win 29200, options [mss 1460,sackOK,TS val 3457681769 ecr 0,nop,wscale 7], length 0
+07:14:04.927103 IP (tos 0x0, ttl 64, id 0, offset 0, flags [DF], proto TCP (6), length 60)
+    172.22.8.56.http > 172.22.8.100.54110: Flags [S.], cksum 0x68f7 (incorrect -> 0x547e), seq 608864624, ack 3490648938, win 28960, options [mss 1460,sackOK,TS val 1185977972 ecr 3457681769,nop,wscale 6], length 0
+07:14:04.929177 IP (tos 0x0, ttl 64, id 18678, offset 0, flags [DF], proto TCP (6), length 52)
+    172.22.8.100.54110 > 172.22.8.56.http: Flags [.], cksum 0xf31c (correct), ack 1, win 229, options [nop,nop,TS val 3457681873 ecr 1185977972], length 0
+07:14:04.931126 IP (tos 0x0, ttl 64, id 18679, offset 0, flags [DF], proto TCP (6), length 454)
+    172.22.8.100.54110 > 172.22.8.56.http: Flags [P.], cksum 0x3b7f (correct), seq 1:403, ack 1, win 229, options [nop,nop,TS val 3457681873 ecr 1185977972], length 402: HTTP, length: 402
+	GET /secreto HTTP/1.1
+	Host: departamentos.iesgn.org
+	User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0
+	Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+	Accept-Language: es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3
+	Accept-Encoding: gzip, deflate
+	DNT: 1
+	Connection: keep-alive
+	Upgrade-Insecure-Requests: 1
+	Authorization: Basic cGFsb21hOnBhbG9tYQ==
+	
+07:14:04.931241 IP (tos 0x0, ttl 64, id 48383, offset 0, flags [DF], proto TCP (6), length 52)
+    172.22.8.56.http > 172.22.8.100.54110: Flags [.], cksum 0x68ef (incorrect -> 0xf094), ack 403, win 470, options [nop,nop,TS val 1185977977 ecr 3457681873], length 0
+07:14:04.933294 IP (tos 0x0, ttl 64, id 48384, offset 0, flags [DF], proto TCP (6), length 664)
+    172.22.8.56.http > 172.22.8.100.54110: Flags [P.], cksum 0x6b53 (incorrect -> 0x5db8), seq 1:613, ack 403, win 470, options [nop,nop,TS val 1185977979 ecr 3457681873], length 612: HTTP, length: 612
+	HTTP/1.1 301 Moved Permanently
+	Date: Wed, 23 Oct 2019 07:14:04 GMT
+	Server: Apache/2.4.38 (Debian)
+	Location: http://departamentos.iesgn.org/secreto/
+	Content-Length: 336
+	Keep-Alive: timeout=5, max=100
+	Connection: Keep-Alive
+	Content-Type: text/html; charset=iso-8859-1
+	
+	<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+	<html><head>
+	<title>301 Moved Permanently</title>
+	</head><body>
+	<h1>Moved Permanently</h1>
+	<p>The document has moved <a href="http://departamentos.iesgn.org/secreto/">here</a>.</p>
+	<hr>
+	<address>Apache/2.4.38 (Debian) Server at departamentos.iesgn.org Port 80</address>
+	</body></html>
+07:14:04.935481 IP (tos 0x0, ttl 64, id 18680, offset 0, flags [DF], proto TCP (6), length 52)
+    172.22.8.100.54110 > 172.22.8.56.http: Flags [.], cksum 0xef10 (correct), ack 613, win 238, options [nop,nop,TS val 3457681879 ecr 1185977979], length 0
+07:14:04.939225 IP (tos 0x0, ttl 64, id 9168, offset 0, flags [DF], proto TCP (6), length 60)
+    172.22.8.100.54112 > 172.22.8.56.http: Flags [S], cksum 0xb808 (correct), seq 2433841256, win 29200, options [mss 1460,sackOK,TS val 3457681883 ecr 0,nop,wscale 7], length 0
+07:14:04.939279 IP (tos 0x0, ttl 64, id 0, offset 0, flags [DF], proto TCP (6), length 60)
+    172.22.8.56.http > 172.22.8.100.54112: Flags [S.], cksum 0x68f7 (incorrect -> 0x5361), seq 2732582261, ack 2433841257, win 28960, options [mss 1460,sackOK,TS val 1185977985 ecr 3457681883,nop,wscale 6], length 0
+07:14:04.942174 IP (tos 0x0, ttl 64, id 9169, offset 0, flags [DF], proto TCP (6), length 52)
+    172.22.8.100.54112 > 172.22.8.56.http: Flags [.], cksum 0xf265 (correct), ack 1, win 229, options [nop,nop,TS val 3457681885 ecr 1185977985], length 0
+07:14:04.942913 IP (tos 0x0, ttl 64, id 9170, offset 0, flags [DF], proto TCP (6), length 455)
+    172.22.8.100.54112 > 172.22.8.56.http: Flags [P.], cksum 0x8e44 (correct), seq 1:404, ack 1, win 229, options [nop,nop,TS val 3457681885 ecr 1185977985], length 403: HTTP, length: 403
+	GET /secreto/ HTTP/1.1
+	Host: departamentos.iesgn.org
+	User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0
+	Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+	Accept-Language: es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3
+	Accept-Encoding: gzip, deflate
+	DNT: 1
+	Authorization: Basic cGFsb21hOnBhbG9tYQ==
+	Connection: keep-alive
+	Upgrade-Insecure-Requests: 1
+	
+07:14:04.943008 IP (tos 0x0, ttl 64, id 53479, offset 0, flags [DF], proto TCP (6), length 52)
+    172.22.8.56.http > 172.22.8.100.54112: Flags [.], cksum 0x68ef (incorrect -> 0xefde), ack 404, win 470, options [nop,nop,TS val 1185977988 ecr 3457681885], length 0
+07:14:04.946170 IP (tos 0x0, ttl 64, id 53480, offset 0, flags [DF], proto TCP (6), length 333)
+    172.22.8.56.http > 172.22.8.100.54112: Flags [P.], cksum 0x6a08 (incorrect -> 0xb247), seq 1:282, ack 404, win 470, options [nop,nop,TS val 1185977992 ecr 3457681885], length 281: HTTP, length: 281
+	HTTP/1.1 200 OK
+	Date: Wed, 23 Oct 2019 07:14:04 GMT
+	Server: Apache/2.4.38 (Debian)
+	Last-Modified: Wed, 23 Oct 2019 06:41:01 GMT
+	ETag: "0-5958e33466792"
+	Accept-Ranges: bytes
+	Content-Length: 0
+	Keep-Alive: timeout=5, max=100
+	Connection: Keep-Alive
+	Content-Type: text/html
+	
+07:14:04.950742 IP (tos 0x0, ttl 64, id 9171, offset 0, flags [DF], proto TCP (6), length 52)
+    172.22.8.100.54112 > 172.22.8.56.http: Flags [.], cksum 0xefa3 (correct), ack 282, win 237, options [nop,nop,TS val 3457681892 ecr 1185977992], length 0
+07:14:04.952385 IP (tos 0x0, ttl 64, id 18681, offset 0, flags [DF], proto TCP (6), length 52)
+    172.22.8.100.54110 > 172.22.8.56.http: Flags [F.], cksum 0xeefe (correct), seq 403, ack 613, win 238, options [nop,nop,TS val 3457681896 ecr 1185977979], length 0
+07:14:04.959201 IP (tos 0x0, ttl 64, id 48385, offset 0, flags [DF], proto TCP (6), length 52)
+    172.22.8.56.http > 172.22.8.100.54110: Flags [F.], cksum 0x68ef (incorrect -> 0xedfb), seq 613, ack 404, win 470, options [nop,nop,TS val 1185978005 ecr 3457681896], length 0
+07:14:04.961213 IP (tos 0x0, ttl 64, id 18682, offset 0, flags [DF], proto TCP (6), length 52)
+    172.22.8.100.54110 > 172.22.8.56.http: Flags [.], cksum 0xeeda (correct), ack 614, win 238, options [nop,nop,TS val 3457681905 ecr 1185978005], length 0
+07:14:09.935457 IP (tos 0x0, ttl 64, id 53481, offset 0, flags [DF], proto TCP (6), length 52)
+    172.22.8.56.http > 172.22.8.100.54112: Flags [F.], cksum 0x68ef (incorrect -> 0xdb3c), seq 282, ack 404, win 470, options [nop,nop,TS val 1185982981 ecr 3457681892], length 0
+07:14:09.940786 IP (tos 0x0, ttl 64, id 9172, offset 0, flags [DF], proto TCP (6), length 52)
+    172.22.8.100.54112 > 172.22.8.56.http: Flags [F.], cksum 0xc8a3 (correct), seq 404, ack 283, win 237, options [nop,nop,TS val 3457686885 ecr 1185982981], length 0
+07:14:09.940924 IP (tos 0x0, ttl 64, id 53482, offset 0, flags [DF], proto TCP (6), length 52)
+    172.22.8.56.http > 172.22.8.100.54112: Flags [.], cksum 0x68ef (incorrect -> 0xc7b5), ack 405, win 470, options [nop,nop,TS val 1185982986 ecr 3457686885], length 0
+~~~
+
+
+**Tarea 8: Cómo hemos visto la autentificación básica no es segura, modifica la autentificación para que sea del tipo digest, y sólo sea accesible a los usuarios pertenecientes al grupo directivos. Comprueba las cabeceras de los mensajes HTTP que se intercambian entre el servidor y el cliente. ¿Cómo funciona esta autentificación?**
+
+
+APUNTES*************
+Esta opción es más segura que la anterior. Se guarda el nombre del usuario, un nombre de dominio y la contraseña. 
+~~~
+<Directory "/var/www/pagina1/probado">
+	AuthUserFile "/etc/apache/claves/digest.txt
+	AuthName "dominio"
+	AuthType Digest
+	Require valid-user
+</Directory>
+~~~
+
+Para crear el fichero de usuarios
+~~~
+htdigest [-c] /etc/apache2/claves/digest.txt dominio usuario1
+~~~
+
+
+
     Tarea 9 (1 punto): Vamos a combinar el control de acceso (tarea 6) y la autentificación (tareas 7 y 8), y vamos a configurar el virtual host para que se comporte de la siguiente manera: el acceso a la URL departamentos.iesgn.org/secreto se hace forma directa desde la intranet, desde la red pública te pide la autentificación. Muestra el resultado al profesor.
 
 Configuración con .htaccessPermalink

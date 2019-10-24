@@ -396,38 +396,143 @@ tcpdump: listening on eth1, link-type EN10MB (Ethernet), capture size 262144 byt
 
 **Tarea 8: Cómo hemos visto la autentificación básica no es segura, modifica la autentificación para que sea del tipo digest, y sólo sea accesible a los usuarios pertenecientes al grupo directivos. Comprueba las cabeceras de los mensajes HTTP que se intercambian entre el servidor y el cliente. ¿Cómo funciona esta autentificación?**
 
-
-APUNTES*************
-Esta opción es más segura que la anterior. Se guarda el nombre del usuario, un nombre de dominio y la contraseña. 
+Se activa el módulo auth_digest:
 ~~~
-<Directory "/var/www/pagina1/probado">
-	AuthUserFile "/etc/apache/claves/digest.txt
-	AuthName "dominio"
-	AuthType Digest
-	Require valid-user
-</Directory>
-~~~
-
-Para crear el fichero de usuarios
-~~~
-htdigest [-c] /etc/apache2/claves/digest.txt dominio usuario1
+vagrant@servidor:~$ sudo a2enmod auth_digest 
+Considering dependency authn_core for auth_digest:
+Module authn_core already enabled
+Enabling module auth_digest.
+To activate the new configuration, you need to run:
+  systemctl restart apache2
+vagrant@servidor:~$ sudo systemctl restart apache2
 ~~~
 
+En la configuración de departamento se cambia el tipo de autentificación:
+~~~
+        <Directory "/srv/www/departamentos/secreto/">
+                AuthUserFile "/etc/apache2/claves/passwdDigest.txt"
+                AuthName "Contraseña"
+                AuthType Digest
+                Require valid-user
+        </Directory>
+~~~
+
+Se añade un usuario con su respectiva contraseña:
+~~~
+vagrant@servidor:~$ sudo htdigest -c /etc/apache2/claves/passwdDigest.txt Contraseña paloma
+Adding password for usuario1 in realm Contraseña.
+New password: 
+Re-type new password: 
+~~~
+
+Y se restaura apache2.
+
+La cabecera del mensaje HTTP es la siguiente:
+~~~
+    servidor-19ac.http > coatlicue-73df.45012: Flags [P.], cksum 0xda3c (incorrect -> 0x660f), seq 613:1008, ack 1347, win 495, options [nop,nop,TS val 4117658060 ecr 356853645], length 395: HTTP, length: 395
+	HTTP/1.1 200 OK
+	Date: Thu, 24 Oct 2019 18:00:26 GMT
+	Server: Apache/2.4.38 (Debian)
+	Authentication-Info: rspauth="667a9d11218432b725019b228d6cbe8f", cnonce="02092357cd4b6860", nc=00000002, qop=auth
+	Last-Modified: Wed, 23 Oct 2019 06:41:01 GMT
+	ETag: "0-5958e33466792"
+	Accept-Ranges: bytes
+	Content-Length: 0
+	Keep-Alive: timeout=5, max=99
+	Connection: Keep-Alive
+	Content-Type: text/html
+~~~
 
 
-    Tarea 9 (1 punto): Vamos a combinar el control de acceso (tarea 6) y la autentificación (tareas 7 y 8), y vamos a configurar el virtual host para que se comporte de la siguiente manera: el acceso a la URL departamentos.iesgn.org/secreto se hace forma directa desde la intranet, desde la red pública te pide la autentificación. Muestra el resultado al profesor.
+**Tarea 9: Vamos a combinar el control de acceso (tarea 6) y la autentificación (tareas 7 y 8), y vamos a configurar el virtual host para que se comporte de la siguiente manera: el acceso a la URL departamentos.iesgn.org/secreto se hace forma directa desde la intranet, desde la red pública te pide la autentificación. Muestra el resultado al profesor.**
 
-Configuración con .htaccessPermalink
+>Configuración con .htaccessPermalink
 
-Date de alta en un proveedor de hosting. ¿Si necesitamos configurar el servidor web que han configurado los administradores del proveedor?, ¿qué podemos hacer? Explica la directiva AllowOverride de apache2. Utilizando archivos .htaccess realiza las siguientes configuraciones:
+Configuración de departamentos.conf:
+~~~
+<VirtualHost *:80>
+        ServerAdmin webmaster@localhost
+        DocumentRoot /srv/www/departamentos
+        ServerName departamentos.iesgn.org
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+	<Directory "/srv/www/departamentos/intranet/">
+		Require ip 192.168.100
+	</Directory>      
+	<Directory "/srv/www/departamentos/internet/">
+                <RequireAll>
+                        Require all granted
+                        Require not ip 192.168.100
+                </RequireAll>
+        </Directory>
+        <Directory "/srv/www/departamentos/secreto/">
+                AuthUserFile "/etc/apache2/claves/passwdDigest.txt"
+                AuthName "Contraseña"
+                AuthType Digest
+                Require valid-user
+                <RequireAll>
+                        Require all granted
+                        Require ip 192.168.100
+                </RequireAll>
+        </Directory>
+</VirtualHost>
+~~~
 
-    Tarea 10 (1 punto)(Obligatorio): Habilita el listado de ficheros en la URL http://host.dominio/nas.
-    Tarea 11 (1 punto): Crea una redirección permanente: cuando entremos en ttp://host.dominio/google salte a www.google.es.
-    Tarea 12 (1 punto): Pedir autentificación para entrar en la URL http://host.dominio/prohibido. (No la hagas si has elegido como proveedor CDMON, en la plataforma de prueba no funciona.)
+Desde la intranet entra sin pedir nada y desde internet si:
+~~~
 
-MódulosPermalink
 
-    Tarea 13 (2 puntos)(Obligatorio): Módulo userdir: Activa y configura el módulo userdir, que permite que cada usuario del sistema tenga la posibilidad de tener un directorio (por defecto se llama public_html) donde alojar su página web. Publica una página de un usuario, y accede a la misma. Esta tarea la tienes que hacer en tu servidor.
+
+
+Commands: Use arrow keys to move, '?' for help, 'q' to quit, '<-' to go b
+  Arrow keys: Up and Down to move.  Right to follow a link; Left to go bac
+ H)elp O)ptions P)rint G)o M)ain screen Q)uit /=search [delete]=history l
+~~~
+
+
+**Date de alta en un proveedor de hosting. Si necesitamos configurar el servidor web que han configurado los administradores del proveedor, ¿qué podemos hacer? Explica la directiva AllowOverride de apache2. Utilizando archivos .htaccess realiza las siguientes configuraciones:**
+
+El hosting que hoy a utilizar es 10hosting. Y se crea en los siguientes pasos:
+1. Nombre: palomapache2.x10host.com
+2. Correo
+3. Contraseña
+4. Ver los terminos y condiciones
+5. Añadir nuestro nombre
+6. Correo de confirmación
+
+**Tarea 10: Habilita el listado de ficheros en la URL http://host.dominio/nas.**
+
+En el fichero .htaccess se añade para que salga el listado de ficheros:
+~~~
+Options +Indexes
+~~~
+
+
+**Tarea 11: Crea una redirección permanente: cuando entremos en ttp://host.dominio/google salte a www.google.es.**
+
+En .htaccess se añade:
+~~~
+RedirectMatch permanent /google http://www.google.es
+~~~
+
+
+**Tarea 12: Pedir autentificación para entrar en la URL http://host.dominio/prohibido. (No la hagas si has elegido como proveedor CDMON, en la plataforma de prueba no funciona.)**
+
+Crea un nuevo .htaccess en el directorio /prohibido con:
+~~~
+AuthType Basic
+AuthName "contraseña"
+AuthUserFile "/home/palomap2/.htpasswds/public_html/prohibido/passwd"
+require valid-user
+~~~
+
+Y en /home/palomap2/.htpasswds/public_html/prohibido/passwd se crean las contraseñas con los usuarios correspondientes.
+
+
+
+# MódulosPermalink
+
+**Tarea 13: Módulo userdir: Activa y configura el módulo userdir, que permite que cada usuario del sistema tenga la posibilidad de tener un directorio (por defecto se llama public_html) donde alojar su página web. Publica una página de un usuario, y accede a la misma. Esta tarea la tienes que hacer en tu servidor.**
 
     Tarea 14 (2 puntos): En tu servidor crea una carpeta php donde vamos a tener un fichero index.php con el siguiente contenido::
 

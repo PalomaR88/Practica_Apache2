@@ -507,6 +507,8 @@ En el fichero .htaccess se añade para que salga el listado de ficheros:
 Options +Indexes
 ~~~
 
+![Imagen10](Img_tarea10.png)
+![Imagen10B](Img_tarea10B.png)
 
 **Tarea 11: Crea una redirección permanente: cuando entremos en ttp://host.dominio/google salte a www.google.es.**
 

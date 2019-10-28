@@ -12,6 +12,7 @@ vagrant@servidor:~$ sudo apt install apache2
 
 Se modifica **/var/www/html/index.html**
 
+![Imagen1](Img_tarea1.png)
 
 
 
@@ -104,6 +105,9 @@ vagrant@servidor:/srv/www$ sudo systemctl reload apache2
 172.22.8.56 www.iesgn.org departamentos.iesgn.org
 ~~~
 
+![Imagen2](Img_tarea2.A.png)
+![Imagen2B](Img_tarea2.B.png)
+
 
 
 ## **Mapeo de URLPermalink**
@@ -170,6 +174,7 @@ total 8
 -rw-r--r-- 1 www-data www-data 12 Oct 23 07:35 fich3.txt
 ~~~
 
+![Imagen4](Img_tarea4.png)
 
 
 
@@ -192,6 +197,10 @@ Configuración iesgn.org:
                 Require all denied
         </Directory>
 ~~~
+
+![Imagen5A](Img_tarea5.png)
+![Imagen5B](Img_tarea5B.png)
+
 
 **Tarea 6: Añade al escenario Vagrant otra máquina conectada por una red interna al servidor. A la URL departamentos.iesgn.org/intranet sólo se debe tener acceso desde el cliente de la red local, y no se pueda acceder desde la anfitriona por la red pública. A la URL departamentos.iesgn.org/internet, sin embargo, sólo se debe tener acceso desde la anfitriona por la red pública, y no desde la red local.**
 
@@ -229,7 +238,10 @@ Y entrando en departamentos.iesgn.org/internet:
     Apache/2.4.38 (Debian) Server at departamentos.iesgn.org Port
     80
 ~~~
-    
+
+![Imagen6](Img_tarea6A.png)
+![Imagen6B](Img_tarea6B.png) 
+
 
 
 **Tarea 7: Autentificación básica. Limita el acceso a la URL departamentos.iesgn.org/secreto. Comprueba las cabeceras de los mensajes HTTP que se intercambian entre el servidor y el cliente. ¿Cómo se manda la contraseña entre el cliente y el servidor?. Entrega una breve explicación del ejercicio.**
@@ -443,6 +455,8 @@ La cabecera del mensaje HTTP es la siguiente:
 	Content-Type: text/html
 ~~~
 
+![Imagen8](Img_tarea8.png)
+
 
 **Tarea 9: Vamos a combinar el control de acceso (tarea 6) y la autentificación (tareas 7 y 8), y vamos a configurar el virtual host para que se comporte de la siguiente manera: el acceso a la URL departamentos.iesgn.org/secreto se hace forma directa desde la intranet, desde la red pública te pide la autentificación. Muestra el resultado al profesor.**
 
@@ -488,6 +502,8 @@ Commands: Use arrow keys to move, '?' for help, 'q' to quit, '<-' to go b
   Arrow keys: Up and Down to move.  Right to follow a link; Left to go bac
  H)elp O)ptions P)rint G)o M)ain screen Q)uit /=search [delete]=history l
 ~~~
+
+![Imagen9](Img_tarea9.png)
 
 
 **Date de alta en un proveedor de hosting. Si necesitamos configurar el servidor web que han configurado los administradores del proveedor, ¿qué podemos hacer? Explica la directiva AllowOverride de apache2. Utilizando archivos .htaccess realiza las siguientes configuraciones:**

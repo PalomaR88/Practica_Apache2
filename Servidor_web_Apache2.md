@@ -526,7 +526,7 @@ Options +Indexes
 ![Imagen10](Img_tarea10.png)
 ![Imagen10B](Img_tarea10B.png)
 
-**Tarea 11: Crea una redirección permanente: cuando entremos en ttp://host.dominio/google salte a www.google.es.**
+**Tarea 11: Crea una redirección permanente: cuando entremos en http://host.dominio/google salte a www.google.es.**
 
 En .htaccess se añade:
 ~~~
@@ -552,7 +552,48 @@ Y en /home/palomap2/.htpasswds/public_html/prohibido/passwd se crean las contras
 
 **Tarea 13: Módulo userdir: Activa y configura el módulo userdir, que permite que cada usuario del sistema tenga la posibilidad de tener un directorio (por defecto se llama public_html) donde alojar su página web. Publica una página de un usuario, y accede a la misma. Esta tarea la tienes que hacer en tu servidor.**
 
-    Tarea 14 (2 puntos): En tu servidor crea una carpeta php donde vamos a tener un fichero index.php con el siguiente contenido::
+Se va a utilizar el usuario paloma que se creó en el ejercicio 9.
+
+Se crea el directorio **public_html**:
+~~~
+vagrant@servidor:/srv/www/departamentos/secreto$ mkdir /home/vagrant/public_html
+vagrant@servidor:/srv/www/departamentos/secreto$ chmod 0755 /home/vagrant/public_html/
+~~~
+
+Se configura **/etc/apache2/mods-enabled/userdir.conf**:
+~~~
+<IfModule mod_userdir.c>
+    UserDir public_html
+    UserDir disabled root
+
+    <Directory /home/*/public_html>
+        AllowOverride FileInfo AuthConfig Limit Indexes
+        Options MultiViews Indexes SymLinksIfOwnerMatch IncludesNoExec
+        <Limit GET POST OPTIONS>
+            Require all granted
+        </Limit>
+        <LimitExcept GET POST OPTIONS>
+            Require all denied
+        </LimitExcept>
+    </Directory>
+</IfModule>
+~~~
+
+
+Se ejecuta el módulo y Apache2:
+~~~
+vagrant@servidor:~$ sudo a2enmod userdir
+Enabling module userdir.
+To activate the new configuration, you need to run:
+  systemctl restart apache2
+vagrant@servidor:~$ sudo systemctl restart apache2
+~~~
+
+![Imagen13](Img_tarea13.png)
+
+
+
+**Tarea 14 (2 puntos): En tu servidor crea una carpeta php donde vamos a tener un fichero index.php con el siguiente contenido:**
 
       <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
       <html xmlns="http://www.w3.org/1999/xhtml">

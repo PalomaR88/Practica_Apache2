@@ -16,7 +16,7 @@ Se modifica **/var/www/html/index.html**
 
 
 
-## **Virtual HostingPermalink**
+## **Virtual Hosting**
 
 **Queremos que nuestro servidor web ofrezca dos sitios web, teniendo en cuenta lo siguiente:**
 
@@ -110,7 +110,7 @@ vagrant@servidor:/srv/www$ sudo systemctl reload apache2
 
 
 
-## **Mapeo de URLPermalink**
+## **Mapeo de URL**
 
 > Cambia la configuración del sitio web www.iesgn.org para que se comporte de la siguiente forma:
 
@@ -180,7 +180,7 @@ total 8
 
 **Tarea 5: En todo el host virtual se debe redefinir los mensajes de error de objeto no encontrado y no permitido. Para el ello se crearan dos ficheros html dentro del directorio error. Entrega las modificaciones necesarias en la configuración y una comprobación del buen funcionamiento.**
 
-Autentificación, Autorización, y Control de AccesoPermalink
+Autentificación, Autorización, y Control de Acceso
 ~~~
 vagrant@servidor:/srv/www/iesgn$ sudo mkdir error
 vagrant@servidor:/srv/www/iesgn/error$ sudo nano error404.html
@@ -460,7 +460,7 @@ La cabecera del mensaje HTTP es la siguiente:
 
 **Tarea 9: Vamos a combinar el control de acceso (tarea 6) y la autentificación (tareas 7 y 8), y vamos a configurar el virtual host para que se comporte de la siguiente manera: el acceso a la URL departamentos.iesgn.org/secreto se hace forma directa desde la intranet, desde la red pública te pide la autentificación. Muestra el resultado al profesor.**
 
->Configuración con .htaccessPermalink
+>Configuración con .htaccess
 
 Configuración de departamentos.conf:
 ~~~
@@ -548,11 +548,9 @@ Y en /home/palomap2/.htpasswds/public_html/prohibido/passwd se crean las contras
 
 
 
-# MódulosPermalink
+# Módulos
 
 **Tarea 13: Módulo userdir: Activa y configura el módulo userdir, que permite que cada usuario del sistema tenga la posibilidad de tener un directorio (por defecto se llama public_html) donde alojar su página web. Publica una página de un usuario, y accede a la misma. Esta tarea la tienes que hacer en tu servidor.**
-
-Se va a utilizar el usuario paloma que se creó en el ejercicio 9.
 
 Se crea el directorio **public_html**:
 ~~~
@@ -595,6 +593,7 @@ vagrant@servidor:~$ sudo systemctl restart apache2
 
 **Tarea 14 (2 puntos): En tu servidor crea una carpeta php donde vamos a tener un fichero index.php con el siguiente contenido:**
 
+~~~
       <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
       <html xmlns="http://www.w3.org/1999/xhtml">
       <head>
@@ -630,12 +629,44 @@ vagrant@servidor:~$ sudo systemctl restart apache2
 
       </body>
       </html>
+~~~
 
-    Prueba la página utilizando parámetros en la URL (parámetros GET), por ejemplo: http://nombre_página/php/index.php?monto=100&pais=Libra
+> Prueba la página utilizando parámetros en la URL (parámetros GET), por ejemplo: http://nombre_página/php/index.php?monto=100&pais=Libra
 
-    Configura mediante un fichero .htaccess, la posibilidad de acceder a la URL http://nombre_página/php/moneda/cantidad, donde moneda indica el nombre de la moneda a la que queremos convertir (Dolar,Libra,Yen) y cantidad indica los euros que queremos convertir.
+> Configura mediante un fichero .htaccess, la posibilidad de acceder a la URL http://nombre_página/php/moneda/cantidad, donde moneda indica el nombre de la moneda a la que queremos convertir (Dolar,Libra,Yen) y cantidad indica los euros que queremos convertir.
 
-IPv6Permalink
+Configuración de la nueva dirección:
+~~~
+vagrant@servidor:/var/www/html$ sudo mkdir php
+vagrant@servidor:/var/www/html/php$ sudo touch index.php
+vagrant@servidor:/var/www/html$ sudo chown -R www-data:www-data php/
+vagrant@servidor:/var/www/html$ sudo cp /etc/apache2/sites-available/iesgn.conf /etc/apache2/sites-available/php.conf
+~~~
+
+Configuración php.conf:
+~~~
+<VirtualHost *:80>
+
+        ServerName www.nombre_pagina.org
+        DocumentRoot /var/www/html/php
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+</VirtualHost>
+~~~
+
+~~~
+vagrant@servidor:/var/www/html$ sudo a2ensite php
+Enabling site php.
+To activate the new configuration, you need to run:
+  systemctl reload apache2
+vagrant@servidor:/var/www/html$ sudo systemctl reload apache2.service
+~~~
+
+Falta instalar módulos de php
+
+
+## **IPv6**
 
     Tarea 15 (1 punto): Comprueba que el servidor web con la configuración por defecto está escuchando por el puerto 80 en ipv6.
     Tarea 16 (1 punto): Configura la máquina para que tenga una ipv6 global. Activa el virtualhost por defecto y accede a la página principal utilizando la ipv6 global que tiene asignada.

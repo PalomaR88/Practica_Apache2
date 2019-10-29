@@ -591,7 +591,7 @@ vagrant@servidor:~$ sudo systemctl restart apache2
 
 
 
-**Tarea 14 (2 puntos): En tu servidor crea una carpeta php donde vamos a tener un fichero index.php con el siguiente contenido:**
+**Tarea 14: En tu servidor crea una carpeta php donde vamos a tener un fichero index.php con el siguiente contenido:**
 
 ~~~
       <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -635,6 +635,11 @@ vagrant@servidor:~$ sudo systemctl restart apache2
 
 > Configura mediante un fichero .htaccess, la posibilidad de acceder a la URL http://nombre_página/php/moneda/cantidad, donde moneda indica el nombre de la moneda a la que queremos convertir (Dolar,Libra,Yen) y cantidad indica los euros que queremos convertir.
 
+Se instala el módulo php de Apache2:
+~~~
+vagrant@servidor:~$ sudo apt install libapache2-mod-php
+~~~
+
 Configuración de la nueva dirección:
 ~~~
 vagrant@servidor:/var/www/html$ sudo mkdir php
@@ -648,7 +653,7 @@ Configuración php.conf:
 <VirtualHost *:80>
 
         ServerName www.nombre_pagina.org
-        DocumentRoot /var/www/html/php
+        DocumentRoot /var/www/html/
         ErrorLog ${APACHE_LOG_DIR}/error.log
         CustomLog ${APACHE_LOG_DIR}/access.log combined
 
@@ -663,7 +668,21 @@ To activate the new configuration, you need to run:
 vagrant@servidor:/var/www/html$ sudo systemctl reload apache2.service
 ~~~
 
-Falta instalar módulos de php
+Se activa el modo rewerite:
+~~~
+vagrant@servidor:~$ sudo a2enmod rewrite
+~~~
+
+Y se configura el fichero /var/www/html/php/.htaccess 
+~~~
+Options FollowSymLinks
+RewriteEngine On
+RewriteBase /
+RewriteRule ^([0-9]+)/([a-zA-Z]+)$ index.php?monto=$1&pais=$2
+~~~
+
+![Imagen14](Img_tarea14.png)
+
 
 
 ## **IPv6**

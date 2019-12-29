@@ -506,6 +506,7 @@ Commands: Use arrow keys to move, '?' for help, 'q' to quit, '<-' to go b
 ![Imagen9](images/Img_tarea9.png)
 
 
+## Proveedor de hosting
 **Date de alta en un proveedor de hosting. Si necesitamos configurar el servidor web que han configurado los administradores del proveedor, ¿qué podemos hacer? Explica la directiva AllowOverride de apache2. Utilizando archivos .htaccess realiza las siguientes configuraciones:**
 
 El hosting que hoy a utilizar es 10hosting. Y se crea en los siguientes pasos:

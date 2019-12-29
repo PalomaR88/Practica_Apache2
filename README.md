@@ -1,5 +1,5 @@
 # [Servidor Web Apache 2.4](https://github.com/PalomaR88/Practica_Apache2/blob/master/Servidor_web_Apache2.md#servidor-web-apache-24)
-> ###[1. Crear un escenario en Vagrant](https://github.com/PalomaR88/Practica_Apache2/blob/master/Servidor_web_Apache2.md#tarea-1-crea-un-escenario-vagrant-con-una-m%C3%A1quina-con-una-red-p%C3%BAblica-o-utiliza-una-m%C3%A1quina-del-cloud-instala-el-servidor-web-apache2-en-la-m%C3%A1quina-modifica-la-p%C3%A1gina-indexhtml-que-viene-por-defecto-y-accede-a-ella-desde-un-navegador-entrega-una-captura-de-pantalla-accediendo-a-ella)
+> [1. Crear un escenario en Vagrant](https://github.com/PalomaR88/Practica_Apache2/blob/master/Servidor_web_Apache2.md#tarea-1-crea-un-escenario-vagrant-con-una-m%C3%A1quina-con-una-red-p%C3%BAblica-o-utiliza-una-m%C3%A1quina-del-cloud-instala-el-servidor-web-apache2-en-la-m%C3%A1quina-modifica-la-p%C3%A1gina-indexhtml-que-viene-por-defecto-y-accede-a-ella-desde-un-navegador-entrega-una-captura-de-pantalla-accediendo-a-ella)
 ## [2. Virtual]()
 ## []()
 ## []()

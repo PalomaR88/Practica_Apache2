@@ -1,6 +1,6 @@
 # Servidor Web Apache 2.4
 
-### **Tarea 1: Crea un escenario Vagrant con una máquina con una red pública o utiliza una máquina del cloud. Instala el servidor web Apache2 en la máquina. Modifica la página index.html que viene por defecto y accede a ella desde un navegador. Entrega una captura de pantalla accediendo a ella.**
+#### Tarea 1: Crea un escenario Vagrant con una máquina con una red pública o utiliza una máquina del cloud. Instala el servidor web Apache2 en la máquina. Modifica la página index.html que viene por defecto y accede a ella desde un navegador. Entrega una captura de pantalla accediendo a ella.
 
 Creación de la máquina con Vagrant:
 [Máquina_servidor_apache](https://github.com/PalomaR88/Practica_Apache2/blob/master/Vagrantfile "Máquina Debian Buster con Vagrant")
@@ -12,11 +12,11 @@ vagrant@servidor:~$ sudo apt install apache2
 
 Se modifica **/var/www/html/index.html**
 
-![Imagen1](Img_tarea1.png)
+![Imagen1](images/Img_tarea1.png)
 
 
 
-## **Virtual Hosting**
+## Virtual Hosting
 
 **Queremos que nuestro servidor web ofrezca dos sitios web, teniendo en cuenta lo siguiente:**
 
@@ -28,7 +28,7 @@ Se modifica **/var/www/html/index.html**
 - El nombre de dominio del primero será www.iesgn.org, su directorio base será /srv/www/iesgn y contendrá una página llamada index.html, donde sólo se verá una bienvenida a la página del Instituto Gonzalo Nazareno.
 - En el segundo sitio vamos a crear una página donde se pondrán noticias por parte de los departamento, el nombre de este sitio será departamentos.iesgn.org, y su directorio base será /srv/www/departamentos. En este sitio sólo tendremos una página inicial index.html, dando la bienvenida a la página de los departamentos del instituto.
 
-**Tarea 2: Configura la resolución estática en los clientes y muestra el acceso a cada una de las páginas.**
+### Tarea 2: Configura la resolución estática en los clientes y muestra el acceso a cada una de las páginas.
 
 > Primer sitio: www.iesgn.org:
 Configuración **/etc/apache2/sites-available/iesgn.conf**:
@@ -105,16 +105,16 @@ vagrant@servidor:/srv/www$ sudo systemctl reload apache2
 172.22.8.56 www.iesgn.org departamentos.iesgn.org
 ~~~
 
-![Imagen2](Img_tarea2.A.png)
-![Imagen2B](Img_tarea2.B.png)
+![Imagen2](images/Img_tarea2.A.png)
+![Imagen2B](images/Img_tarea2.B.png)
 
 
 
-## **Mapeo de URL**
+## Mapeo de URL
 
 > Cambia la configuración del sitio web www.iesgn.org para que se comporte de la siguiente forma:
 
-**Tarea 3: Cuando se entre a la dirección www.iesgn.org se redireccionará automáticamente a www.iesgn.org/principal, donde se mostrará el mensaje de bienvenida. En el directorio principal no se permite ver la lista de los ficheros, no se permite que se siga los enlaces simbólicos y no se permite negociación de contenido. Muestra al profesor el funcionamiento.**
+#### Tarea 3: Cuando se entre a la dirección www.iesgn.org se redireccionará automáticamente a www.iesgn.org/principal, donde se mostrará el mensaje de bienvenida. En el directorio principal no se permite ver la lista de los ficheros, no se permite que se siga los enlaces simbólicos y no se permite negociación de contenido. Muestra al profesor el funcionamiento.
 
 Hay que modificar el fichero **/etc/apache2/sites-available/iesgn.conf** de la siguiente manera:
 ~~~
@@ -122,7 +122,7 @@ Hay que modificar el fichero **/etc/apache2/sites-available/iesgn.conf** de la s
 ~~~
 
 
-**Tarea 4: Si accedes a la página www.iesgn.org/principal/documentos se visualizarán los documentos que hay en /srv/doc. Por lo tanto se permitirá el listado de fichero y el seguimiento de enlaces simbólicos siempre que sean a ficheros o directorios cuyo dueño sea el usuario. Muestra al profesor el funcionamiento.**
+#### Tarea 4: Si accedes a la página www.iesgn.org/principal/documentos se visualizarán los documentos que hay en /srv/doc. Por lo tanto se permitirá el listado de fichero y el seguimiento de enlaces simbólicos siempre que sean a ficheros o directorios cuyo dueño sea el usuario. Muestra al profesor el funcionamiento.
 
 ~~~
 vagrant@servidor:/srv/www/iesgn$ sudo mkdir /srv/doc
@@ -174,11 +174,11 @@ total 8
 -rw-r--r-- 1 www-data www-data 12 Oct 23 07:35 fich3.txt
 ~~~
 
-![Imagen4](Img_tarea4.png)
+![Imagen4](images/Img_tarea4.png)
 
 
 
-**Tarea 5: En todo el host virtual se debe redefinir los mensajes de error de objeto no encontrado y no permitido. Para el ello se crearan dos ficheros html dentro del directorio error. Entrega las modificaciones necesarias en la configuración y una comprobación del buen funcionamiento.**
+#### Tarea 5: En todo el host virtual se debe redefinir los mensajes de error de objeto no encontrado y no permitido. Para el ello se crearan dos ficheros html dentro del directorio error. Entrega las modificaciones necesarias en la configuración y una comprobación del buen funcionamiento.
 
 Autentificación, Autorización, y Control de Acceso
 ~~~
@@ -198,11 +198,11 @@ Configuración iesgn.org:
         </Directory>
 ~~~
 
-![Imagen5A](Img_tarea5.png)
-![Imagen5B](Img_tarea5B.png)
+![Imagen5A](images/Img_tarea5.png)
+![Imagen5B](images/Img_tarea5B.png)
 
 
-**Tarea 6: Añade al escenario Vagrant otra máquina conectada por una red interna al servidor. A la URL departamentos.iesgn.org/intranet sólo se debe tener acceso desde el cliente de la red local, y no se pueda acceder desde la anfitriona por la red pública. A la URL departamentos.iesgn.org/internet, sin embargo, sólo se debe tener acceso desde la anfitriona por la red pública, y no desde la red local.**
+#### Tarea 6: Añade al escenario Vagrant otra máquina conectada por una red interna al servidor. A la URL departamentos.iesgn.org/intranet sólo se debe tener acceso desde el cliente de la red local, y no se pueda acceder desde la anfitriona por la red pública. A la URL departamentos.iesgn.org/internet, sin embargo, sólo se debe tener acceso desde la anfitriona por la red pública, y no desde la red local.
 
 Se modifica /etc/apache2/sites-available/departamentos.conf:
 ~~~
@@ -239,12 +239,12 @@ Y entrando en departamentos.iesgn.org/internet:
     80
 ~~~
 
-![Imagen6](Img_tarea6A.png)
-![Imagen6B](Img_tarea6B.png) 
+![Imagen6](images/Img_tarea6A.png)
+![Imagen6B](images/Img_tarea6B.png) 
 
 
 
-**Tarea 7: Autentificación básica. Limita el acceso a la URL departamentos.iesgn.org/secreto. Comprueba las cabeceras de los mensajes HTTP que se intercambian entre el servidor y el cliente. ¿Cómo se manda la contraseña entre el cliente y el servidor?. Entrega una breve explicación del ejercicio.**
+#### Tarea 7: Autentificación básica. Limita el acceso a la URL departamentos.iesgn.org/secreto. Comprueba las cabeceras de los mensajes HTTP que se intercambian entre el servidor y el cliente. ¿Cómo se manda la contraseña entre el cliente y el servidor?. Entrega una breve explicación del ejercicio.
 
 Se crea un directorio llamado secreto con un fichero html:
 ~~~
@@ -406,7 +406,7 @@ tcpdump: listening on eth1, link-type EN10MB (Ethernet), capture size 262144 byt
 ~~~
 
 
-**Tarea 8: Cómo hemos visto la autentificación básica no es segura, modifica la autentificación para que sea del tipo digest, y sólo sea accesible a los usuarios pertenecientes al grupo directivos. Comprueba las cabeceras de los mensajes HTTP que se intercambian entre el servidor y el cliente. ¿Cómo funciona esta autentificación?**
+#### Tarea 8: Cómo hemos visto la autentificación básica no es segura, modifica la autentificación para que sea del tipo digest, y sólo sea accesible a los usuarios pertenecientes al grupo directivos. Comprueba las cabeceras de los mensajes HTTP que se intercambian entre el servidor y el cliente. ¿Cómo funciona esta autentificación?
 
 Se activa el módulo auth_digest:
 ~~~
@@ -455,10 +455,10 @@ La cabecera del mensaje HTTP es la siguiente:
 	Content-Type: text/html
 ~~~
 
-![Imagen8](Img_tarea8.png)
+![Imagen8](images/Img_tarea8.png)
 
 
-**Tarea 9: Vamos a combinar el control de acceso (tarea 6) y la autentificación (tareas 7 y 8), y vamos a configurar el virtual host para que se comporte de la siguiente manera: el acceso a la URL departamentos.iesgn.org/secreto se hace forma directa desde la intranet, desde la red pública te pide la autentificación. Muestra el resultado al profesor.**
+#### Tarea 9: Vamos a combinar el control de acceso (tarea 6) y la autentificación (tareas 7 y 8), y vamos a configurar el virtual host para que se comporte de la siguiente manera: el acceso a la URL departamentos.iesgn.org/secreto se hace forma directa desde la intranet, desde la red pública te pide la autentificación. Muestra el resultado al profesor.
 
 >Configuración con .htaccess
 
@@ -503,7 +503,7 @@ Commands: Use arrow keys to move, '?' for help, 'q' to quit, '<-' to go b
  H)elp O)ptions P)rint G)o M)ain screen Q)uit /=search [delete]=history l
 ~~~
 
-![Imagen9](Img_tarea9.png)
+![Imagen9](images/Img_tarea9.png)
 
 
 **Date de alta en un proveedor de hosting. Si necesitamos configurar el servidor web que han configurado los administradores del proveedor, ¿qué podemos hacer? Explica la directiva AllowOverride de apache2. Utilizando archivos .htaccess realiza las siguientes configuraciones:**
@@ -516,17 +516,17 @@ El hosting que hoy a utilizar es 10hosting. Y se crea en los siguientes pasos:
 5. Añadir nuestro nombre
 6. Correo de confirmación
 
-**Tarea 10: Habilita el listado de ficheros en la URL http://host.dominio/nas.**
+#### Tarea 10: Habilita el listado de ficheros en la URL http://host.dominio/nas.
 
 En el fichero .htaccess se añade para que salga el listado de ficheros:
 ~~~
 Options +Indexes
 ~~~
 
-![Imagen10](Img_tarea10.png)
-![Imagen10B](Img_tarea10B.png)
+![Imagen10](images/Img_tarea10.png)
+![Imagen10B](images/Img_tarea10B.png)
 
-**Tarea 11: Crea una redirección permanente: cuando entremos en http://host.dominio/google salte a www.google.es.**
+#### Tarea 11: Crea una redirección permanente: cuando entremos en http://host.dominio/google salte a www.google.es.
 
 En .htaccess se añade:
 ~~~
@@ -534,7 +534,7 @@ RedirectMatch permanent /google http://www.google.es
 ~~~
 
 
-**Tarea 12: Pedir autentificación para entrar en la URL http://host.dominio/prohibido. (No la hagas si has elegido como proveedor CDMON, en la plataforma de prueba no funciona.)**
+#### Tarea 12: Pedir autentificación para entrar en la URL http://host.dominio/prohibido. (No la hagas si has elegido como proveedor CDMON, en la plataforma de prueba no funciona.)
 
 Crea un nuevo .htaccess en el directorio /prohibido con:
 ~~~
@@ -548,9 +548,9 @@ Y en /home/palomap2/.htpasswds/public_html/prohibido/passwd se crean las contras
 
 
 
-# Módulos
+## Módulos
 
-**Tarea 13: Módulo userdir: Activa y configura el módulo userdir, que permite que cada usuario del sistema tenga la posibilidad de tener un directorio (por defecto se llama public_html) donde alojar su página web. Publica una página de un usuario, y accede a la misma. Esta tarea la tienes que hacer en tu servidor.**
+#### Tarea 13: Módulo userdir: Activa y configura el módulo userdir, que permite que cada usuario del sistema tenga la posibilidad de tener un directorio (por defecto se llama public_html) donde alojar su página web. Publica una página de un usuario, y accede a la misma. Esta tarea la tienes que hacer en tu servidor.
 
 Se crea el directorio **public_html**:
 ~~~
@@ -587,11 +587,11 @@ To activate the new configuration, you need to run:
 vagrant@servidor:~$ sudo systemctl restart apache2
 ~~~
 
-![Imagen13](Img_tarea13.png)
+![Imagen13](images/Img_tarea13.png)
 
 
 
-**Tarea 14: En tu servidor crea una carpeta php donde vamos a tener un fichero index.php con el siguiente contenido:**
+#### Tarea 14: En tu servidor crea una carpeta php donde vamos a tener un fichero index.php con el siguiente contenido:
 
 ~~~
       <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -681,7 +681,7 @@ RewriteBase /
 RewriteRule ^([0-9]+)/([a-zA-Z]+)$ index.php?monto=$1&pais=$2
 ~~~
 
-![Imagen14](Img_tarea14.png)
+![Imagen14](images/Img_tarea14.png)
 
 
 
